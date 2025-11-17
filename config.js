@@ -1,6 +1,5 @@
 module.exports = {
 token: process.env TOKEN,
-
   clientId:'YOUR_APPLICATION_ID'
     guildId: 'YOUR_SERVER_ID'
   verifyChannelId: process.env.VERIFY_CHANNEL_ID,
