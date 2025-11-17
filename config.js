@@ -1,6 +1,8 @@
 module.exports = {
-  guildId: process.env.GUILD_ID,
-  clientId: process.env.CLIENT_ID,
+token: process.env TOKEN,
+
+  clientId:'YOUR_APPLICATION_ID'
+    guildId: 'YOUR_SERVER_ID'
   verifyChannelId: process.env.VERIFY_CHANNEL_ID,
   memberRoleId: process.env.MEMBER_ROLE_ID,
   logsChannelId: process.env.LOG_CHANNEL_ID,
