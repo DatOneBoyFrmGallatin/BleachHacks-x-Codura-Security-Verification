@@ -1,63 +1,58 @@
 const fs = require('fs');
 const path = require('path');
-const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord.js');
-const config = require('./config');
+const {
+    Client,
+    GatewayIntentBits,
+    Collection,
+    REST,
+    Routes,
+} = require('discord.js');
 
-if (!config.TOKEN) {
-    console.error("❌ ERROR: TOKEN is missing.");
-    process.exit(1);
-}
-if (!config.CLIENT_ID) {
-    console.error("❌ ERROR: CLIENT_ID is missing.");
-    process.exit(1);
-}
-if (!config.GUILD_ID) {
-    console.error("❌ ERROR: GUILD_ID is missing.");
-    process.exit(1);
-}
+const {
+    TOKEN,
+    CLIENT_ID,
+    GUILD_ID
+} = require('./config.js');
 
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildMembers,
     ]
 });
 
 client.commands = new Collection();
 const commands = [];
 
-const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
+    const command = require(`./commands/${file}`);
 
-    if ("data" in command && "execute" in command) {
+    if ('data' in command && 'execute' in command) {
         client.commands.set(command.data.name, command);
         commands.push(command.data.toJSON());
     } else {
-        console.log(`⚠️ Skipped ${file}: Missing "data" or "execute"`);
+        console.log(`❌ Skipped ${file}: missing "data" or "execute"`);
     }
 }
 
-const rest = new REST({ version: '10' }).setToken(config.TOKEN);
+client.once('ready', async () => {
+    console.log(`Logged in as ${client.user.tag}`);
 
-(async () => {
+    const rest = new REST({ version: '10' }).setToken(TOKEN);
+
     try {
-        console.log("🔁 Refreshing slash commands...");
+        console.log('Refreshing slash commands...');
         await rest.put(
-            Routes.applicationGuildCommands(config.CLIENT_ID, config.GUILD_ID),
+            Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
             { body: commands }
         );
-        console.log("✅ Commands registered!");
+        console.log('Slash commands registered!');
     } catch (error) {
-        console.error("❌ Slash command error:", error);
+        console.error(error);
     }
-})();
-
-client.once('ready', () => {
-    console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
 client.on('interactionCreate', async interaction => {
@@ -65,16 +60,14 @@ client.on('interactionCreate', async interaction => {
 
     const command = client.commands.get(interaction.commandName);
 
-    if (!command) {
-        return interaction.reply({ content: "❌ Command not found.", ephemeral: true });
-    }
+    if (!command) return;
 
     try {
         await command.execute(interaction);
     } catch (error) {
         console.error(error);
-        interaction.reply({ content: "❌ Error executing command.", ephemeral: true });
+        await interaction.reply({ content: 'There was an error executing this command.', ephemeral: true });
     }
 });
 
-client.login(config.TOKEN);
+client.login(TOKEN);
