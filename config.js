@@ -1,5 +1,5 @@
 module.exports = {
-    token: process.env.TOKEN,     // This pulls your token from Render
-    clientId: "YOUR_APPLICATION_ID",
-    guildId: "YOUR_SERVER_ID",
+    TOKEN: process.env.TOKEN,
+    CLIENT_ID: process.env.CLIENT_ID,
+    GUILD_ID: process.env.GUILD_ID
 };
